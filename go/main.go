@@ -50,23 +50,7 @@ func main() {
 	router.Use(middleware.Logger)
 	router.Use(render.SetContentType(render.ContentTypeJSON))
 
-	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Hello World!"))
-	})
-
-	router.Post("/recipes", postRecipes)
-
 	http.ListenAndServe(":3000", router)
-}
-
-func postRecipes(w http.ResponseWriter, r *http.Request) {
-	data := &RecipeRequest{}
-	if err := render.Bind(r, data); err != nil {
-	}
-}
-
-func getRecipes(w http.ResponseWriter, r *http.Request, db *sql.DB) {
-
 }
 
 func connectToDb(config pq.Config) (*sql.DB, error) {
@@ -88,22 +72,10 @@ func connectToDb(config pq.Config) (*sql.DB, error) {
 	return db, nil
 }
 
-type Recipe struct {
-	Name         string   `json:"name"`
-	Ingredients  []string `json:"ingredients"`
-	Instructions []string `json:"instructions"`
-	CookingTime  int64    `json:"cooking_time"`
-	PeopleCount  int64    `json:"people_count"`
-}
-
-type RecipeRequest struct {
-	*Recipe
-}
-
-func (a *RecipeRequest) Bind(r *http.Request) error {
-	if a.Recipe == nil {
-		return errors.New("Missing required Recipe fields")
-	}
-
-	return nil
-}
+func RecipeRouter() chi.Router {
+	r := chi.NewRouter()
+	recipeHandler := RecipeHandler{}
+	r.Get("/", recipeHandler.ListRecipes)
+	r.Post("/", recipeHandler.CreateRecipe)
+	r.Route("/{recipeId}", func (r chi.Router) {
+		r.Use(
