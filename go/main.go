@@ -36,7 +36,7 @@ func RecipeRoutes() chi.Router {
 }
 
 func dbGetRecipe(recipeId string) (*Recipe, error) {
-	for _, r := range(recipes) {
+	for _, r := range(recipesDb) {
 		if r.ID == recipeId {
 			return r, nil
 		}
