@@ -2,6 +2,7 @@ package main
 
 import(
 	"net/http"
+	"errors"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -22,5 +23,23 @@ func main() {
 func RecipeRoutes() chi.Router {
 	r := chi.NewRouter()
 	recipeHandler := RecipeHandler{}
-	r.get("/", recipeHandler.ListRecipes)
-	r.Mount
+	r.Get("/", recipeHandler.ListRecipes)
+	r.Post("/", recipeHandler.CreateRecipe)
+	r.Route("/{recipeId}", func(r chi.Router) {
+		r.Use(recipeHandler.RecipeCtx)
+		r.Get("/", recipeHandler.GetRecipe)
+		r.Put("/", recipeHandler.UpdateRecipe)
+		r.Delete("/", recipeHandler.DeleteRecipe)
+	})
+
+	return r
+}
+
+func dbGetRecipe(recipeId string) (*Recipe, error) {
+	for _, r := range(recipes) {
+		if r.ID == recipeId {
+			return r, nil
+		}
+	}
+	return nil, errors.New("recipe not found")
+}
