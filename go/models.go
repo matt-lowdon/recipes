@@ -40,7 +40,7 @@ type RecipeResponse struct{
 	*Recipe
 }
 
-func (r *RecipeResponse) Render(w http.ResponseWriter, r *http.Request) error {
+func (rr *RecipeResponse) Render(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
@@ -73,7 +73,7 @@ func ErrRender(err error) render.Renderer {
 		Err : err,
 		HTTPStatusCode : 422,
 		StatusText : "Error rendering response.",
-		ErrorText : err.Error()
+		ErrorText : err.Error(),
 	}
 }
 
