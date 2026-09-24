@@ -1,6 +1,6 @@
 package main
 
-var recipes = []*Recipe{
+var recipesDb = []*Recipe{
 	{
 		ID: "1",
 		Name: "Test",
