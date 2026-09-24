@@ -11,7 +11,12 @@ import(
 type RecipeHandler struct{
 }
 
-func (rh *RecipeHandler) ListRecipes(w http.ResponseWriter, r *http.Request) {}
+func (rh *RecipeHandler) ListRecipes(w http.ResponseWriter, r *http.Request) {
+	if err := render.RenderList(w, r, RecipeListResponse()); err != nil {
+		render.Render(w, r, ErrRender(err))
+		return
+	}
+}
 func (rh *RecipeHandler) GetRecipe(w http.ResponseWriter, r *http.Request) {}
 func (rh *RecipeHandler) CreateRecipe(w http.ResponseWriter, r *http.Request) {}
 func (rh *RecipeHandler) UpdateRecipe(w http.ResponseWriter, r *http.Request) {}
@@ -36,4 +41,15 @@ func (rh *RecipeHandler) RecipeCtx(next http.Handler) http.Handler {
 		ctx := context.WithValue(r.Context(), "recipe", recipe)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
+}
+
+//Code supporting RecipeHandler.ListRecipes
+func RecipeListResponse() []render.Renderer {
+	list := []render.Renderer{}
+
+	for _, recipe := range recipesDb {
+		list = append(list, &RecipeResponse{Recipe: recipe})
+	}
+
+	return list
 }
