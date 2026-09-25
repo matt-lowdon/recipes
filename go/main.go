@@ -51,3 +51,13 @@ func dbNewRecipe (recipe *Recipe) (string, error) {
 	recipesDb = append(recipesDb, recipe)
 	return recipe.ID, nil
 }
+
+func dbUpdateRecipe(id string, recipe *Recipe) (*Recipe, error) {
+	for i, r := range(recipesDb) {
+		if r.ID == id {
+			recipesDb[i] = recipe
+			return recipe, nil
+		}
+	}
+	return nil, errors.New("recipe not found")
+}
