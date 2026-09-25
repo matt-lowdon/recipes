@@ -49,12 +49,27 @@ func (rh *RecipeHandler) UpdateRecipe(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	recipe = data.Recipe
-	dbUpdateRecipe(recipe.ID, recipe)
+	newRecipe := data.Recipe
+	newRecipe, err = dbUpdateRecipe(newRecipe.ID, newRecipe)
+	if err != nil{
+		render.Render(w, r, ErrInvalidRequest(err))
+		return
+	}
 	render.Render(w, r, &RecipeResponse{Recipe: recipe})
 }
 
-func (rh *RecipeHandler) DeleteRecipe(w http.ResponseWriter, r *http.Request) {}
+func (rh *RecipeHandler) DeleteRecipe(w http.ResponseWriter, r *http.Request) {
+	var err error
+
+	recipe := r.Context().Value("recipe").(*Recipe)
+	recipe, err = dbDeleteRecipe(recipe.ID)
+	if err != nil{
+		render.Render(w, r, ErrInvalidRequest(err))
+		return
+	}
+	render.Render(w, r, &RecipeResponse{Recipe : recipe})
+}
+
 func (rh *RecipeHandler) RecipeCtx(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var err error
