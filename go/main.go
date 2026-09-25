@@ -3,6 +3,8 @@ package main
 import(
 	"net/http"
 	"errors"
+	"fmt"
+	"math/rand"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -42,4 +44,10 @@ func dbGetRecipe(recipeId string) (*Recipe, error) {
 		}
 	}
 	return nil, errors.New("recipe not found")
+}
+
+func dbNewRecipe (recipe *Recipe) (string, error) {
+	recipe.ID = fmt.Sprintf("%d", rand.Intn(100) + 10)
+	recipesDb = append(recipesDb, recipe)
+	return recipe.ID, nil
 }
