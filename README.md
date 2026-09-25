@@ -33,3 +33,10 @@ configured for persistant storage.
 ## TypeScript Frontend
 
 Not started yet!
+
+## Resources
+
+I took most of my inspiration for the Go API from the following:
+
+* [go-chi rest example](http://github.com/go-chi/chi/blob/master/_examples/rest/main.go)
+* [This Earthly tutorial](https://earthly.dev/blog/golang-chi/)
