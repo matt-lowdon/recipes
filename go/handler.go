@@ -17,8 +17,29 @@ func (rh *RecipeHandler) ListRecipes(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
-func (rh *RecipeHandler) GetRecipe(w http.ResponseWriter, r *http.Request) {}
-func (rh *RecipeHandler) CreateRecipe(w http.ResponseWriter, r *http.Request) {}
+
+func (rh *RecipeHandler) GetRecipe(w http.ResponseWriter, r *http.Request) {
+	recipe := r.Context().Value("recipe").(*Recipe)
+	if err := render.Render(w, r, &RecipeResponse{Recipe : recipe}); err != nil {
+		render.Render(w, r, ErrRender(err))
+		return
+	}
+}
+
+func (rh *RecipeHandler) CreateRecipe(w http.ResponseWriter, r *http.Request) {
+	data := &RecipeRequest{}
+	err := render.Bind(r, data); if err != nil{
+		render.Render(w, r, ErrInvalidRequest(err))
+		return
+	}
+
+	recipe := data.Recipe
+	dbNewRecipe(recipe)
+
+	render.Status(r, http.StatusCreated)
+	render.Render(w, r, &RecipeResponse{Recipe : recipe})
+}
+
 func (rh *RecipeHandler) UpdateRecipe(w http.ResponseWriter, r *http.Request) {}
 func (rh *RecipeHandler) DeleteRecipe(w http.ResponseWriter, r *http.Request) {}
 func (rh *RecipeHandler) RecipeCtx(next http.Handler) http.Handler {
