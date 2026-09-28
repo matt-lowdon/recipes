@@ -5,12 +5,22 @@ import(
 	"errors"
 	"fmt"
 	"math/rand"
+	"os"
+	"context"
+	"log/slog"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func main() {
+	postgresUrl := fmt.Sprintf(
+		"postgres://%s:%s@database:5432/recipes_db",
+		os.Getenv("POSTGRES_USER"),
+		os.Getenv("POSTGRES_PASSWORD"),
+	)
+
 	router := chi.NewRouter()
 	router.Use(middleware.Logger)
 	router.Get("/", func(w http.ResponseWriter, r *http.Request) {
