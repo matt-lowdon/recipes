@@ -28,19 +28,14 @@ CREATE TYPE UNIT AS ENUM (
     'g',
     'tsp',
     'tbsp',
-    'whole'
-);
-
-CREATE TYPE INGREDIENT AS (
-    name TEXT,
-    quantity INTEGER,
-    unit UNIT,
-    preparation TEXT
+    'whole',
+    'bulb',
+    'clove'
 );
 
 CREATE TABLE IF NOT EXISTS recipes_api.recipes (
     id SERIAL PRIMARY KEY,
-    name TEXT NOT NULL,
+    name TEXT NOT NULL UNIQUE,
     servings INTEGER NOT NULL,
     cook_time_minutes INTEGER NOT NULL,
     created_at TIMESTAMPTZ DEFAULT now()
@@ -48,29 +43,52 @@ CREATE TABLE IF NOT EXISTS recipes_api.recipes (
 
 CREATE TABLE IF NOT EXISTS recipes_api.ingredients (
     id SERIAL PRIMARY KEY,
-    name TEXT NOT NULL
+    name TEXT NOT NULL UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS recipes_api.recipe_ingredients (
-    recipe_id INT REFERENCES recipes(id) ON DELETE CASCADE,
-    ingredient_id INT REFERENCES ingredients(id),
+    recipe_id INT REFERENCES recipes_api.recipes(id) ON DELETE CASCADE,
+    ingredient_id INT REFERENCES recipes_api.ingredients(id),
     quantity INTEGER NOT NULL,
     unit UNIT,
     PRIMARY KEY(recipe_id)
 );
 
 CREATE TABLE IF NOT EXISTS recipes_api.recipe_instructions (
-    recipe_id INTEGER REFERENCES recipes(id) ON DELETE CASCADE,
+    recipe_id INTEGER REFERENCES recipes_api.recipes(id) ON DELETE CASCADE,
     position INTEGER NOT NULL,
-    step_text TEXT NOT NULL
+    step_text TEXT NOT NULL,
     PRIMARY KEY(recipe_id, position)
 );
 
-INSERT INTO recipes_api.recipes (name, ingredients, instructions, servings, cook_time_minutes)
-VALUES (
-    'Toast',
-    ARRAY [('Bread', 2, 'whole', 'sliced')::INGREDIENT],
-    ARRAY ['Put bread in toaster for 2 minutes', 'Apply butter and toppings'],
-    1,
-    5
-)
+INSERT INTO recipes_api.recipes(name, servings, cook_time_minutes)
+VALUES ('toast', 1, 5)
+ON CONFLICT (name) DO UPDATE SET name = EXCLUDED.name;
+
+INSERT INTO recipes_api.ingredients(name)
+VALUES ('bread')
+ON CONFLICT (name) DO UPDATE SET name = EXCLUDED.name;
+
+INSERT INTO recipes_api.recipe_ingredients (recipe_id, ingredient_id, quantity, unit)
+VALUES
+    (
+        (SELECT id FROM recipes_api.recipes WHERE name = 'toast'),
+        (SELECT id FROM recipes_api.ingredients WHERE name = 'bread'),
+        1,
+        'whole'
+    )
+ON CONFLICT DO NOTHING;
+
+INSERT INTO recipes_api.recipe_instructions(recipe_id, position, step_text)
+VALUES
+    (
+        (SELECT id FROM recipes_api.recipes WHERE name = 'toast'),
+        1,
+        'Put bread in the toaster for 2 minutes'
+    ),
+    (
+        (SELECT id FROM recipes_api.ingredients WHERE name = 'bread'),
+        2,
+        'Apply butter and toppings'
+    )
+ON CONFLICT DO NOTHING;
