@@ -51,6 +51,7 @@ CREATE TABLE IF NOT EXISTS recipes_api.recipe_ingredients (
     ingredient_id INT REFERENCES recipes_api.ingredients(id),
     quantity INTEGER NOT NULL,
     unit UNIT,
+    preparation TEXT NOT NULL,
     PRIMARY KEY(recipe_id)
 );
 
@@ -69,13 +70,14 @@ INSERT INTO recipes_api.ingredients(name)
 VALUES ('bread')
 ON CONFLICT (name) DO UPDATE SET name = EXCLUDED.name;
 
-INSERT INTO recipes_api.recipe_ingredients (recipe_id, ingredient_id, quantity, unit)
+INSERT INTO recipes_api.recipe_ingredients (recipe_id, ingredient_id, quantity, unit, preparation)
 VALUES
     (
         (SELECT id FROM recipes_api.recipes WHERE name = 'toast'),
         (SELECT id FROM recipes_api.ingredients WHERE name = 'bread'),
         1,
-        'whole'
+        'whole',
+        'sliced'
     )
 ON CONFLICT DO NOTHING;
 
