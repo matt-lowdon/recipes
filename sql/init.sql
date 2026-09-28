@@ -41,11 +41,29 @@ CREATE TYPE INGREDIENT AS (
 CREATE TABLE IF NOT EXISTS recipes_api.recipes (
     id SERIAL PRIMARY KEY,
     name TEXT NOT NULL,
-    ingredients INGREDIENT[] NOT NULL,
-    instructions TEXT[] NOT NULL,
     servings INTEGER NOT NULL,
     cook_time_minutes INTEGER NOT NULL,
     created_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS recipes_api.ingredients (
+    id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS recipes_api.recipe_ingredients (
+    recipe_id INT REFERENCES recipes(id) ON DELETE CASCADE,
+    ingredient_id INT REFERENCES ingredients(id),
+    quantity INTEGER NOT NULL,
+    unit UNIT,
+    PRIMARY KEY(recipe_id)
+);
+
+CREATE TABLE IF NOT EXISTS recipes_api.recipe_instructions (
+    recipe_id INTEGER REFERENCES recipes(id) ON DELETE CASCADE,
+    position INTEGER NOT NULL,
+    step_text TEXT NOT NULL
+    PRIMARY KEY(recipe_id, position)
 );
 
 INSERT INTO recipes_api.recipes (name, ingredients, instructions, servings, cook_time_minutes)
