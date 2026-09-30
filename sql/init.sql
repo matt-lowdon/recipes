@@ -51,8 +51,8 @@ CREATE TABLE IF NOT EXISTS recipes_api.recipe_ingredients (
     ingredient_id INT REFERENCES recipes_api.ingredients(id),
     quantity INTEGER NOT NULL,
     unit UNIT,
-    preparation TEXT NOT NULL,
-    PRIMARY KEY(recipe_id)
+    preparation TEXT,
+    PRIMARY KEY(recipe_id, ingredient_id)
 );
 
 CREATE TABLE IF NOT EXISTS recipes_api.recipe_instructions (
