@@ -25,7 +25,11 @@ func newPg(ctx context.Context, connString string) (*postgres, error) {
 }
 
 func (pg *postgres) GetRecipe(recipeId string, ctx context.Context) (*Recipe, error) {
-	var recipe *Recipe
+	var r *Recipe
+	var err error
+	var rows []pgx.Rows
+	var ingredients []Ingredient
+	var instructions []string
 
 	args := pgx.NamedArgs{
 		"recipe_id" : recipeId,
@@ -46,16 +50,32 @@ func (pg *postgres) GetRecipe(recipeId string, ctx context.Context) (*Recipe, er
 	instructionQuery := `SELECT step_text FROM recipes_api.recipe_instructions
 	WHERE recipe_id = @recipe_id ORDER BY position;`
 	
-	recipeQuery := `SELECT name, servings, cook_time_minutes FROM recipes_api.recipes
+	recipeQuery := `SELECT id, name, servings, cook_time_minutes FROM recipes_api.recipes
 	WHERE id = @recipe_id;`
 
-	rows, err := pg.db.Exec(ctx, ingredientQuery, args)
+	rows, err = pg.db.Exec(ctx, ingredientQuery, args)
 	if err != nil {
 		return nil, errors.New("issue retrieving ingredients", "error", err)
 	}
 
 	ingredients = pgx.CollectRows(rows, pgx.RowToStructByName[Ingredient])
+	r.Ingredients = ingredients
 
+	rows, err = pg.db.Exec(ctx, instructionQuery, args)
+	if err != nil {
+		return nil, errors.New("issue retrieving instructions", "error", err)
+	}
+
+	instructions = pgx.CollectRows(rows, pgx.RowTo[string])
+	r.Instructions = instructions
+
+	err = pg.db.QueryRow(ctx, recipeQuery).Scan(&r.Name, &r.Servings, &r.CookTimeMinutes)
+	if err != nil {
+		return nil, errors.New("issue retrieving recipe", "error", err)
+	}
+
+	return r, nil
+}
 var recipesDb = []*Recipe{
 	{
 		ID: "1",
